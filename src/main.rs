@@ -22,8 +22,10 @@ fn main() -> Result<()> {
     let mut last_index = 0;
 
     let mut workspaces = jumpstart_workspaces()?;
-    let mut active_workspace: i32 = 1;
-    let mut submap = String::new();
+    let mut active_workspace: i32 = jumpstart_active_workspace()?;
+    let mut submap = String::new(); //jumpstart_submap()?;
+                                    // I cannot find a way to get the submap from hyprctl,
+                                    // this will have to be something to work on later
 
     render_workspaces(workspaces.clone(), active_workspace, submap.clone());
 
@@ -124,7 +126,22 @@ fn jumpstart_workspaces() -> Result<Vec<i32>> {
 
     results.sort();
 
-    return Ok(results);
+    Ok(results)
+}
+
+fn jumpstart_active_workspace() -> Result<i32> {
+    let re = Regex::new(r"\d+").unwrap();
+
+    let res: String = String::from_utf8(
+        Command::new("hyprctl")
+            .args(["activeworkspace"])
+            .output()?
+            .stdout,
+    )?;
+
+    let mat = re.find(&res).unwrap();
+
+    Ok((res[mat.range()]).parse::<i32>()?)
 }
 
 fn render_workspaces(workspaces: Vec<i32>, active_workspace: i32, submap: String) {
@@ -148,7 +165,7 @@ fn render_workspaces(workspaces: Vec<i32>, active_workspace: i32, submap: String
                 :spacing 5 \
                 :space-evenly \"false\" \
                 {workspace_str} \"{submap}\" )"
-    )
+    );
 }
 
 static ALPHA_CHAR: u32 = 912; // the unicode character Alpha
