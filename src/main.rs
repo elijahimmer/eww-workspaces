@@ -69,7 +69,7 @@ fn main() -> Result<()> {
                     Err(j) => error!("Destroyed non-existant workspace: {j}"),
                 },
                 Event::Submap(map) => submap = map,
-                Event::None => re_render = false,
+                Event::None => re_render = re_render || false,
             };
 
             last_index += i + 1;
@@ -78,15 +78,13 @@ fn main() -> Result<()> {
         }
 
         if copy_over {
-            copy_over = false;
             buffer.copy_within(last_index.., 0);
             last_index = 0;
-
-            render_workspaces(workspaces.clone(), active_workspace, submap.clone());
         }
 
         if re_render {
             debug!("{workspaces:?}");
+            render_workspaces(workspaces.clone(), active_workspace, submap.clone());
         }
     }
 }
